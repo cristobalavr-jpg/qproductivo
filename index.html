@@ -373,6 +373,28 @@ const QP_BACKEND_URL = 'https://script.google.com/macros/s/AKfycbx16tLF-xeOhOPVS
 const enLinea = () => !!QP_BACKEND_URL;
 let PEND = JSON.parse(localStorage.getItem('qp_pend') || '[]');   // cambios sin confirmar
 
+/* ── Numeros que Sheets convierte en fecha ────────────────────────────────
+   El log guarda en UNA columna (`valor`) los datos de todos los campos, y
+   appendRow hereda el formato de la fila de arriba: si ahi quedo una `fecha`,
+   el numero que cae debajo se lee como numero de serie y vuelve convertido —
+   el SKU 400701 son 400.701 dias desde 1899-12-30, o sea "2997-01-28". Por eso
+   el dano es intermitente y solo golpea a los campos numericos.
+   La conversion es exacta, asi que se deshace al leer (numPlano) y ademas se
+   bloquea al escribir con un apostrofo, que Sheets consume como marca de texto.
+   Dos defensas y no una: este mismo error ya habia mordido a `fecha` y a `ts`. */
+const CAMPOS_NUM = ['sku_reemplazo', 'q_llegada'];
+const EPOCA_SHEETS = Date.UTC(1899, 11, 30);
+
+function numPlano(v){
+  if(v == null) return v;
+  let s = String(v).trim();
+  if(s.startsWith("'")) s = s.slice(1).trim();
+  if(!/^\d{3,4}-\d{2}-\d{2}T/.test(s)) return s;       // no fue convertido
+  const t = Date.parse(s);
+  if(isNaN(t)) return s;
+  return String(Math.round((t - EPOCA_SHEETS) / 86400000));
+}
+
 /* "2026-09-11T03:00:00.000Z" -> "2026-09-11". Se usa la fecha LOCAL, no la UTC:
    con UTC-3 el ISO cae a las 03:00Z del mismo dia, pero tomar slice(0,10) del
    ISO puede correr un dia en otros husos. */
@@ -419,12 +441,11 @@ async function cargarNube(){
     // Google Sheets convierte en objeto Date todo lo que parezca fecha, y vuelve
     // como "2026-09-11T03:00:00.000Z". Hay que devolverlo a texto plano o el
     // campo <input type="date"> queda vacio y la comparacion con el dia de
-    // quiebre falla. Los numeros vuelven como numero (sku_reemplazo).
+    // quiebre falla. Los numericos van por numPlano(), que deshace la conversion.
     const norm = v => {
       if(v.ts) v.ts = fechaLegible(v.ts);
       if(v.fecha) v.fecha = soloFecha(v.fecha);
-      if(v.sku_reemplazo != null) v.sku_reemplazo = String(v.sku_reemplazo).trim();
-      if(v.q_llegada != null && v.q_llegada !== '') v.q_llegada = String(v.q_llegada);
+      CAMPOS_NUM.forEach(k => { if(v[k] != null && v[k] !== '') v[k] = numPlano(v[k]); });
     };
     Object.values(RESP).forEach(norm);
     Object.values(ASIG).forEach(norm);
@@ -504,10 +525,15 @@ async function vaciarCola(){
   if(!enLinea() || !PEND.length) return;
   const envio = PEND.slice();
   estadoNube('carga', '● guardando…');
+  /* Los numericos salen con apostrofo delante para que Sheets los guarde como
+     texto y no los reinterprete como numero de serie de fecha. Va solo en el
+     cuerpo del POST: en memoria y en localStorage el valor queda limpio. */
+  const aEnviar = envio.map(c => CAMPOS_NUM.includes(c.campo) && c.valor !== '' && c.valor != null
+    ? Object.assign({}, c, {valor: "'" + numPlano(c.valor)}) : c);
   try{
     const j = await (await fetch(QP_BACKEND_URL, {method:'POST',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({periodo: PERIODO, cambios: envio})})).json();
+      body: JSON.stringify({periodo: PERIODO, cambios: aEnviar})})).json();
     if(!j.ok) throw new Error(j.error || 'rechazado');
     PEND = PEND.slice(envio.length);
     guardarLocal();
