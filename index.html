@@ -93,6 +93,64 @@ h1{font-size:1.03rem;font-weight:700;display:inline}
 .tab .n{display:inline-block;background:#fee2e2;color:#b91c1c;border-radius:11px;padding:0 7px;
   font-size:.66rem;margin-left:5px;font-weight:700}
 
+/* ═══ ranking de respuesta ═══
+   Medidor de un solo tono + porcentaje escrito: el estado NO se codifica solo
+   por color. Las medallas son relativas (posicion) y la barra absoluta (nivel),
+   para que se pueda ir primero y aun asi estar en rojo. */
+.rk{background:var(--sup);border:1px solid var(--linea);border-radius:10px;overflow:hidden;margin-bottom:6px}
+.rkHead{display:flex;align-items:center;gap:10px;padding:6px 12px;background:linear-gradient(90deg,#f0fdfa,#f8fafc 62%);
+  border-bottom:1px solid var(--linea);flex-wrap:wrap}
+.rkHead h3{font-size:.78rem;font-weight:700;color:#0f766e}
+.rkHead .q{font-size:.66rem;color:var(--tinta2)}
+.rkHead .sp{flex:1}
+.rkTog{font-size:.72rem;font-weight:800;border:none;background:none;color:#0f766e;cursor:pointer;
+  padding:0 2px;line-height:1;width:14px}
+.rkHead .q .b-ok{color:#15803d}.rkHead .q .b-med{color:#b45309}.rkHead .q .b-mal{color:#b91c1c}
+.seg{display:flex;border:1px solid #cbd5e1;border-radius:7px;overflow:hidden}
+.seg button{font-size:.68rem;font-weight:600;border:none;background:var(--sup);color:var(--tinta2);
+  padding:4px 11px;cursor:pointer;border-right:1px solid #e2e8f0}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--acento);color:#fff}
+.rk table{width:100%;border-collapse:collapse}
+.rk th{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--tinta2);
+  padding:5px 9px;background:var(--grid);border-bottom:1px solid var(--linea);text-align:left;white-space:nowrap}
+.rk th.num{text-align:right}
+.rk th[title]{cursor:help;text-decoration:underline dotted #cbd5e1 1px;text-underline-offset:3px}
+.rk td{font-size:.77rem;padding:6px 9px;border-bottom:1px solid var(--grid);vertical-align:middle}
+.rk td.num{text-align:right;font-variant-numeric:tabular-nums}
+.rk tbody tr{cursor:pointer;transition:.12s}
+.rk tbody tr:hover{background:#f0fdfa}
+.rk tbody tr.yo{background:#fffbeb}
+.rk tbody tr.yo:hover{background:#fef3c7}
+.rk .pos{font-size:.92rem;width:34px;text-align:center;font-weight:800;color:var(--mudo)}
+.rk .nom{font-weight:700}
+.rk .nom .tuyo{font-size:.59rem;font-weight:700;background:#fde68a;color:#78350f;border-radius:10px;
+  padding:1px 7px;margin-left:6px;vertical-align:1px}
+.rk .cl{cursor:pointer;border-radius:5px}
+.rk .cl:hover{background:#e0f2fe;outline:2px solid #bae6fd}
+.rk .c0{color:#cbd5e1;font-weight:600}
+.rk .cMal{font-weight:800;color:#b91c1c}
+.rk .cMed{font-weight:800;color:#b45309}
+.rk .urg{display:inline-block;font-size:.59rem;font-weight:800;background:#fee2e2;color:#b91c1c;
+  border:1px solid #fecaca;border-radius:9px;padding:0 5px;margin-left:5px;vertical-align:1px}
+.alDia{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.pctN{font-size:.82rem;font-weight:800;font-variant-numeric:tabular-nums;min-width:40px;text-align:right}
+.bar{width:92px;height:9px;background:#eef2f7;border-radius:5px;overflow:hidden;flex:none}
+.bar i{display:block;height:100%;border-radius:5px}
+.b-mal i{background:#dc2626}.b-mal .pctN{color:#b91c1c}
+.b-med i{background:#d97706}.b-med .pctN{color:#b45309}
+.b-ok  i{background:#16a34a}.b-ok  .pctN{color:#15803d}
+/* cartera demasiado chica para rankear: se ve, pero fuera de la competencia */
+.rk tr.chica td{background:#fcfdfe;color:var(--tinta2)}
+.rk tr.chica .nom{font-weight:600}
+.rk tr.chica .pos{font-size:.7rem}
+.rk tr.banda td{background:var(--grid);padding:3px 9px;font-size:.59rem;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--mudo);cursor:default}
+.rk tr.banda:hover td{background:var(--grid)}
+.rk tfoot td{font-size:.76rem;font-weight:800;background:var(--grid);border-top:2px solid var(--linea);padding:6px 9px}
+.rk tfoot .lbl{color:var(--tinta2);text-transform:uppercase;font-size:.64rem;letter-spacing:.04em}
+.rkPie{font-size:.65rem;color:var(--mudo);padding:0 2px 6px;line-height:1.55}
+
 /* ═══ kpis ═══ */
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:6px}
 @media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}}
@@ -319,6 +377,8 @@ footer{font-size:.67rem;color:var(--mudo);line-height:1.55;padding:2px 0 8px}
 
   <!-- ══════════ SUBSECCIÓN 1: tabla operativa ══════════ -->
   <div class="panel" id="panelRiesgo">
+    <div class="rk" id="ranking"></div>
+    <div class="rkPie" id="rankingPie"></div>
     <div class="kpis" id="kpis"></div>
     <div class="filtros">
       <select id="fComprador"><option value="">Todos los compradores</option></select>
@@ -873,6 +933,173 @@ function pintarMs(){
 }
 
 /* ══════════ kpis ══════════ */
+/* ══════════ ranking de respuesta por comprador ══════════
+   Va arriba de todo: lo primero que ve quien abre el visor es como va su
+   cartera contra la del resto.
+
+   Compite el % AL DIA, no el conteo de pendientes: quien lleva 38 SKU no puede
+   competir contra quien lleva 7, y rankear por cantidad castigaria tener cartera
+   grande. 'escalar' y 'no cubre' NO penalizan — declarar que no hay solucion es
+   la respuesta correcta cuando no la hay, y penalizarla premiaria esconder el
+   problema en vez de levantarlo. Lo que resta es lo que SI depende del comprador:
+   no responder, prometer una fecha que no sirve, o incumplir la que prometio. */
+let RK = 'TODAS';                 // 'TODAS' (por defecto) | nombre de una vista
+const RK_MIN = 5;                 // cartera minima para entrar a la competencia
+/* El bloque ocupa ~230px. En un notebook de 700px eso se come la tabla, que es
+   la herramienta de trabajo: se puede plegar y la eleccion queda recordada.
+   Plegado sigue mostrando el marcador propio y el del equipo. */
+let RK_ABIERTO = localStorage.getItem('qp_rk') !== '0';
+
+const rkVistas = () => Object.keys(DATA.vistas)
+  .filter(v => DATA.rows.some(r => r.vista === v))
+  .sort((a, b) => DATA.vistas[a].orden - DATA.vistas[b].orden);
+
+function rkDatos(){
+  const vs = RK === 'TODAS' ? rkVistas() : [RK];
+  const lim = plusDias(3), b = {};
+  vs.forEach(v => enRiesgo(v).forEach(r => {
+    const c = compDe(r), e = estatus(r), m = met(r);
+    const o = b[c] = b[c] || {riesgo:0, sin:0, tarde:0, noLlego:0, sinStock:0, urg:0};
+    o.riesgo++;
+    if(e === 'sin' || e === 'incompleta'){ o.sin++; if(m.dq && m.dq <= lim) o.urg++; }
+    else if(e === 'tarde') o.tarde++;
+    else if(e === 'no_llego') o.noLlego++;
+    else if(e === 'sin_stock') o.sinStock++;
+  }));
+  return b;
+}
+const rkPend = o => o.sin + o.tarde + o.noLlego + o.sinStock;
+const rkPct  = o => o.riesgo ? (o.riesgo - rkPend(o)) / o.riesgo : 1;
+const rkCls  = p => p >= .8 ? 'b-ok' : p >= .5 ? 'b-med' : 'b-mal';
+
+function pintarRanking(){
+  const c = rkDatos();
+  const orden = (a, b) => b.p - a.p || rkPend(a.o) - rkPend(b.o) || b.o.riesgo - a.o.riesgo;
+  const todos = Object.entries(c).map(([n, o]) => ({n, o, p: rkPct(o)}));
+  /* Con 1 o 2 SKU el porcentaje es suerte, no gestion: esas carteras se muestran
+     pero fuera del ranking. Sin este corte un comprador con 1 solo SKU resuelto
+     salia primero con 100%, y eso desacredita la tabla entera. */
+  const grandes = todos.filter(f => f.o.riesgo >= RK_MIN).sort(orden);
+  const chicas  = todos.filter(f => f.o.riesgo <  RK_MIN).sort(orden);
+  const compite = grandes.length >= 2;
+  const med = ['🥇','🥈','🥉'];
+
+  // celda de conteo: 0 se apaga, y el numero es clicable para ir a esas filas
+  const cel = (n, cls, est, extra) => '<td class="num">' +
+    (n ? '<b class="' + cls + ' cl" data-est="' + est + '" title="ver esos ' + n +
+         ' SKU en la tabla">' + n + '</b>' : '<span class="c0">0</span>') +
+    (extra || '') + '</td>';
+
+  const fila = (f, i, chica) => {
+    const o = f.o, p = f.p;
+    return '<tr class="' + (chica ? 'chica' : '') + (f.n === YO ? ' yo' : '') +
+        '" data-c="' + f.n + '" title="clic para filtrar la tabla por ' + f.n + '">' +
+      '<td class="pos">' + (chica || !compite ? '·' : (med[i] || (i + 1))) + '</td>' +
+      '<td class="nom">' + f.n + (f.n === YO ? '<span class="tuyo">tú</span>' : '') + '</td>' +
+      '<td class="num">' + o.riesgo + '</td>' +
+      cel(o.sin, 'cMal', 'sin', o.urg ? '<span class="urg" title="' + o.urg +
+          ' de ellos quiebran en ≤3 días">⚠ ' + o.urg + '</span>' : '') +
+      cel(o.tarde, 'cMed', 'tarde') +
+      cel(o.noLlego, 'cMal', 'no_llego') +
+      '<td class="num"><div class="alDia ' + rkCls(p) + '">' +
+        '<span class="pctN">' + Math.round(p * 100) + '%</span>' +
+        '<span class="bar"><i style="width:' + Math.round(p * 100) + '%"></i></span></div></td></tr>';
+  };
+  const banda = t => '<tr class="banda"><td colspan="7">' + t + '</td></tr>';
+
+  const T = Object.values(c).reduce((a, o) => {
+    Object.keys(o).forEach(k => a[k] = (a[k] || 0) + o[k]); return a;
+  }, {riesgo:0, sin:0, tarde:0, noLlego:0, sinStock:0, urg:0});
+  const pT = rkPct(T);
+
+  // plegado: el marcador propio y el del equipo siguen a la vista
+  const mio = todos.find(f => f.n === YO);
+  const resumen = (mio ? '<b class="' + rkCls(mio.p) + '">' + YO + ' ' + Math.round(mio.p * 100) +
+      '%</b> · ' : '') + 'equipo ' + Math.round(pT * 100) + '%';
+
+  document.getElementById('ranking').innerHTML = `
+    <div class="rkHead">
+      <button class="rkTog" id="rkTog" title="${RK_ABIERTO ? 'plegar' : 'desplegar'} el ranking">${RK_ABIERTO ? '▾' : '▸'}</button>
+      <h3>🏁 Ranking de respuesta</h3>
+      <span class="q">${RK_ABIERTO
+        ? (RK === 'TODAS' ? 'total de las ' + rkVistas().length + ' líneas' : 'línea ' + RK) +
+          ' · ventana ' + etiquetaVentana()
+        : resumen}</span>
+      <span class="sp"></span>
+      <div class="seg" id="rkSeg"${RK_ABIERTO ? '' : ' hidden'}>
+        <button data-v="TODAS"${RK === 'TODAS' ? ' class="on"' : ''}>Total</button>
+        ${rkVistas().map(v => '<button data-v="' + v + '"' + (RK === v ? ' class="on"' : '') +
+          '>' + DATA.vistas[v].label + '</button>').join('')}
+      </div>
+    </div>
+    <table${RK_ABIERTO ? '' : ' hidden'}>
+      <thead><tr>
+        <th class="pos">#</th>
+        <th>Comprador</th>
+        <th class="num" title="SKU de su cartera que no alcanzan a cubrir el plan en la ventana activa">En riesgo</th>
+        <th class="num" title="Sin ningún estado registrado, o con el estado puesto pero sin los campos que ese estado exige">Sin responder</th>
+        <th class="num" title="Prometió reposición con fecha POSTERIOR al día en que se agota el stock: esa fecha no sirve">Llega tarde</th>
+        <th class="num" title="Prometió una fecha, la fecha ya pasó y el stock no subió respecto de la foto anterior de MOBIDIC">Atrasados</th>
+        <th class="num" title="SKU bien gestionados ÷ SKU en riesgo de su cartera. Escalar y «no cubre» no penalizan.">Al día</th>
+      </tr></thead>
+      <tbody>${compite
+        ? grandes.map((f, i) => fila(f, i, false)).join('') +
+          (chicas.length ? banda('cartera chica — menos de ' + RK_MIN + ' SKU en riesgo, fuera del ranking') +
+             chicas.map(f => fila(f, 0, true)).join('') : '')
+        : banda('muy pocos SKU en esta línea para rankear') +
+          todos.sort(orden).map(f => fila(f, 0, true)).join('')}</tbody>
+      <tfoot><tr>
+        <td></td><td class="lbl">Equipo</td>
+        <td class="num">${T.riesgo}</td><td class="num">${T.sin}</td>
+        <td class="num">${T.tarde}</td><td class="num">${T.noLlego}</td>
+        <td class="num"><div class="alDia ${rkCls(pT)}">
+          <span class="pctN">${Math.round(pT * 100)}%</span>
+          <span class="bar"><i style="width:${Math.round(pT * 100)}%"></i></span></div></td>
+      </tr></tfoot>
+    </table>`;
+
+  const pie = document.getElementById('rankingPie');
+  pie.hidden = !RK_ABIERTO;
+  pie.innerHTML =
+    'Clic en una fila filtra la tabla por ese comprador · clic en un número filtra además por ese estatus' +
+    (RK === 'TODAS' ? ' y salta a la línea donde tiene más casos (la tabla muestra una línea a la vez)' : '') + '.';
+
+  document.getElementById('rkTog').onclick = e => {
+    e.stopPropagation();
+    RK_ABIERTO = !RK_ABIERTO;
+    localStorage.setItem('qp_rk', RK_ABIERTO ? '1' : '0');
+    pintarRanking(); ajustarAlto();
+  };
+
+  document.querySelectorAll('#rkSeg button').forEach(b =>
+    // cambiar de linea cambia el alto del ranking: la tabla se reajusta o queda corrida
+    b.onclick = e => { e.stopPropagation(); RK = b.dataset.v; pintarRanking(); ajustarAlto(); });
+
+  /* El ranking no es solo marcador: lleva al trabajo. Una alerta sin accion
+     asociada es ruido, asi que cada celda salta a las filas que la originan.
+
+     La tabla de abajo es SIEMPRE de una linea (cada vista tiene sus propias
+     columnas de dias), asi que desde el Total el clic salta a la linea donde
+     ese comprador concentra mas casos. Sin esto, hacer clic en "31 sin
+     responder" dejaba la tabla en 10 filas y parecia un error. */
+  document.querySelectorAll('#ranking tbody tr[data-c]').forEach(tr => tr.onclick = e => {
+    const n = e.target.closest('[data-est]');
+    const comp = tr.dataset.c;
+    const ests = n ? (n.dataset.est === 'sin' ? ['sin','incompleta'] : [n.dataset.est]) : null;
+    if(RK === 'TODAS'){
+      const cuenta = v => enRiesgo(v).filter(r =>
+        compDe(r) === comp && (!ests || ests.includes(estatus(r)))).length;
+      const mejor = rkVistas().reduce((a, v) => cuenta(v) > cuenta(a) ? v : a, VISTA);
+      if(cuenta(mejor) > cuenta(VISTA)){ VISTA = mejor; pintarTabs(); }
+    }
+    document.getElementById('fComprador').value = comp;
+    F_ESTATUS.clear();
+    if(ests) ests.forEach(x => F_ESTATUS.add(x));
+    render();
+    document.querySelector('.tblbox').scrollIntoView({behavior:'smooth', block:'nearest'});
+  });
+}
+
 function pintarKpis(){
   const rs = enRiesgo(VISTA);
   // "vencido" = el dia de quiebre ya paso. Se cuenta aparte para no vender como
@@ -1719,7 +1946,7 @@ function render(){
   poblarFiltros(); pintarMs();
   const nA = Object.keys(ASIG).length, bA = document.getElementById('btnAsig');
   bA.hidden = !nA; bA.textContent = 'Asignaciones (' + nA + ')'; bA.classList.toggle('on', !!nA);
-  if(PANEL === 'riesgo'){ pintarKpis(); pintarTabla(); }
+  if(PANEL === 'riesgo'){ pintarRanking(); pintarKpis(); pintarTabla(); }
   else if(PANEL === 'plan'){ pintarPlan(); }
   else { pintarResumen(); }
 }
